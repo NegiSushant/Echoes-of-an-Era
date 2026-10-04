@@ -29,6 +29,19 @@ The goal of this project is to create an interactive interface to those recorded
 
 ---
 
+## Screenshots
+
+![alt text](images/image.png)
+![alt text](images/image-8.png)
+![alt text](images/image-7.png)
+![alt text](images/image-1.png)
+![alt text](images/image-2.png)
+![alt text](images/image-3.png)
+![alt text](images/image-4.png)
+![alt text](images/image-5.png)
+![alt text](images/image-6.png)
+---
+
 ## The Solution
 
 **Echoes of an Era** processes authentic voice recordings through a pipeline of local Speech-to-Text transcription, structured memory extraction, high-dimensional vector embeddings, hybrid search, and retrieval-grounded Q&A.
@@ -196,9 +209,6 @@ The project was validated against real-world test scenarios:
 ## Built for a Real Person
 
 This project was conceived and built specifically for my grandfather. Rather than serving as an abstract technical concept, every design decision—from high-contrast UI fonts and simple navigation to exact audio playback links—was tailored to respect and preserve his living legacy.
-
-### Grandfather's Feedback
-[Add grandfather's exact feedback here before publishing.]
 
 ---
 
