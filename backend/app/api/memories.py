@@ -31,24 +31,35 @@ ALLOWED_EXTENSIONS = {".mp3", ".wav", ".m4a"}
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 def get_audio_duration(file_path: str, ext: str) -> float:
-    """Calculates duration in seconds without altering the audio file."""
+    """
+    Calculates duration in seconds without altering the audio file.
+    Uses PyAV (available via faster-whisper) which natively decodes mp3, wav, m4a, mp4, etc.
+    Fully compatible with Python 3.13 (does not rely on deprecated/removed audioop / pydub).
+    """
+    # 1. Primary: Use PyAV to inspect container metadata
     try:
-        if ext == ".wav":
+        import av
+        with av.open(file_path) as container:
+            if container.duration:
+                return round(float(container.duration) / 1_000_000.0, 2)
+            if container.streams.audio:
+                stream = container.streams.audio[0]
+                if stream.duration and stream.time_base:
+                    return round(float(stream.duration * stream.time_base), 2)
+    except Exception as e:
+        print(f"[Audio Info Note] PyAV duration extraction note: {e}")
+
+    # 2. Fallback for standard WAV files using built-in wave module
+    try:
+        if ext.lower() == ".wav":
             with wave.open(file_path, "rb") as w:
                 frames = w.getnframes()
                 rate = w.getframerate()
                 if rate > 0:
                     return round(frames / float(rate), 2)
-        else:
-            # Fallback using pydub if ffmpeg is available
-            try:
-                from pydub import AudioSegment
-                audio = AudioSegment.from_file(file_path)
-                return round(len(audio) / 1000.0, 2)
-            except Exception:
-                pass
     except Exception as e:
-        print(f"[Audio Info Warning] Could not calculate duration: {e}")
+        print(f"[Audio Info Warning] Wave fallback failed: {e}")
+
     return 0.0
 
 @router.post("/upload", response_model=MemoryUploadResponse, status_code=201)
@@ -323,8 +334,8 @@ def stream_original_audio(
 @router.post("/{memory_id}/process", response_model=TranscriptProcessResponse)
 def process_audio_transcription(
     memory_id: str,
-    language: Optional[str] = Query(None, description="Optional language code (e.g. 'hi' for Hindi, 'en' for English). None auto-detects."),
-    model_size: Optional[str] = Query(None, description="Optional model size override (e.g. 'large-v3', 'large-v3-turbo')"),
+    language: Optional[str] = None,
+    model_size: Optional[str] = None,
     db: Session = Depends(get_db)
 ):
     """
@@ -546,5 +557,61 @@ async def extract_and_embed_memory_endpoint(
     db.commit()
     db.refresh(mem)
 
-    return mem
+    return _format_memory_response(mem)
+
+
+@router.post("/{memory_id}/pipeline", response_model=MemoryResponse)
+async def process_full_memory_pipeline(
+    memory_id: str,
+    language: Optional[str] = Query(None),
+    model_size: Optional[str] = Query(None),
+    db: Session = Depends(get_db)
+):
+    """
+    COMPLETE END-TO-END MEMORY PIPELINE:
+    1. Transcribes the audio recording with Whisper (STT) if not yet transcribed.
+    2. Runs Gemma 3 extraction to extract structured memory insights & life advice.
+    3. Runs BGE-M3 local embedding to generate 1024-dim pgvector vector.
+    4. Persists everything into PostgreSQL + pgvector so it's instantly searchable.
+    """
+    # 1. Transcribe audio if needed
+    transcript = db.query(MemoryTranscript).filter(MemoryTranscript.memory_id == memory_id).first()
+    if not transcript or not transcript.full_transcript:
+        process_audio_transcription(memory_id=memory_id, language=language, model_size=model_size, db=db)
+
+    # 2. Extract structured memory & embed into pgvector
+    return await extract_and_embed_memory_endpoint(memory_id=memory_id, db=db)
+
+
+@router.post("/process_all_pending")
+async def process_all_pending_memories(
+    db: Session = Depends(get_db)
+):
+    """
+    Processes all audio records currently in 'uploaded' status through the full pipeline.
+    """
+    pending = db.query(AudioRecord).filter(AudioRecord.status == "uploaded").all()
+    results = []
+    for rec in pending:
+        try:
+            # Transcribe
+            process_audio_transcription(memory_id=rec.memory_id, db=db)
+            # Extract & Embed
+            mem_dict = await extract_and_embed_memory_endpoint(memory_id=rec.memory_id, db=db)
+            results.append({
+                "memory_id": rec.memory_id,
+                "file_name": rec.file_name,
+                "status": "success",
+                "title": mem_dict.get("title")
+            })
+        except Exception as e:
+            results.append({
+                "memory_id": rec.memory_id,
+                "file_name": rec.file_name,
+                "status": "failed",
+                "error": str(e)
+            })
+
+    return {"processed_count": len(results), "results": results}
+
 

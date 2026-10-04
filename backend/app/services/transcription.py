@@ -32,7 +32,10 @@ try:
 except Exception:
     pass
 
-WHISPER_MODEL_SIZE = os.getenv("WHISPER_MODEL_SIZE", "large-v3")
+from dotenv import load_dotenv
+load_dotenv()
+
+WHISPER_MODEL_SIZE = os.getenv("WHISPER_MODEL_SIZE", "tiny")
 DEVICE = os.getenv("DEVICE", "cpu")
 
 
@@ -84,7 +87,9 @@ class TranscriptionService:
 
     def _get_model(self, requested_size: Optional[str] = None):
         """Lazy-load the WhisperModel (int8 on CPU, float16 on CUDA)."""
-        target_size = requested_size or self.model_size
+        target_size = requested_size if (isinstance(requested_size, str) and requested_size.strip()) else self.model_size
+        if not isinstance(target_size, str) or not target_size.strip():
+            target_size = "tiny"
 
         if self._model is not None and self._active_model_size == target_size:
             return self._model
@@ -147,8 +152,11 @@ class TranscriptionService:
         if not os.path.exists(audio_file_path):
             raise FileNotFoundError(f"Audio file not found: {audio_file_path}")
 
-        model = self._get_model(model_size)
-        used_model_name = self._active_model_size or (model_size or self.model_size)
+        clean_model_size = model_size if (isinstance(model_size, str) and model_size.strip()) else None
+        clean_language = language if (isinstance(language, str) and language.strip()) else None
+
+        model = self._get_model(clean_model_size)
+        used_model_name = self._active_model_size or (clean_model_size or self.model_size)
 
         t_start = time.time()
 
@@ -162,7 +170,7 @@ class TranscriptionService:
             audio_file_path,
             beam_size=5,
             best_of=5,
-            language=language,  # None = auto-detect Hindi, English, etc.
+            language=clean_language,  # None = auto-detect Hindi, English, etc.
             initial_prompt=prompt_text,
             vad_filter=True,
             vad_parameters=dict(

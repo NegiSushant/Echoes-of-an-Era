@@ -29,12 +29,10 @@ class EmbeddingService:
 
     def _get_model(self):
         """
-        Loads the embedding model.
-        1. Prefers local_files_only=True if model exists in local Hugging Face cache.
-        2. If local load fails and EMBEDDING_LOCAL_ONLY=true, fails loudly with clear diagnostic error.
-        3. If EMBEDDING_LOCAL_ONLY=false, allows download from Hugging Face.
-        4. Asserts that sentence embedding dimension is exactly target_dim (1024).
-        5. Logs model, device, dimension, and source.
+        Loads the embedding model locally from the Hugging Face cache.
+        Enforces local-only execution: no network downloading during API requests.
+        Asserts that sentence embedding dimension is exactly target_dim (1024).
+        Logs model, device, dimension, and source.
         """
         if self._model is not None:
             return self._model
@@ -44,46 +42,29 @@ class EmbeddingService:
         model = None
         source = None
 
-        # Step 1: Attempt loading from local cache first
+        # Attempt loading from local cache (strict local execution, no downloading during requests)
         try:
-            print(f"[Embeddings] Attempting to load '{self.model_name}' from local Hugging Face cache...")
+            print(f"[Embeddings] Loading '{self.model_name}' locally from Hugging Face cache...")
             model = SentenceTransformer(self.model_name, device=self.device, local_files_only=True)
             source = "local Hugging Face cache"
         except Exception as local_err:
-            if self.local_only:
-                error_msg = (
-                    f"\n{'=' * 70}\n"
-                    f"[Embeddings Error] Failed to load model '{self.model_name}' from local cache.\n"
-                    f"Configuration: EMBEDDING_LOCAL_ONLY=true\n"
-                    f"Underlying Error: {local_err}\n"
-                    f"Explanation: The model weights for '{self.model_name}' are not present in your local Hugging Face cache.\n"
-                    f"Silent fallback to 384-dim models (all-MiniLM-L6-v2) is disabled to protect pgvector data integrity.\n"
-                    f"To fix this:\n"
-                    f"  1. Allow downloading the model by setting EMBEDDING_LOCAL_ONLY=false in .env\n"
-                    f"  2. Or download the weights to cache using:\n"
-                    f"     python -c \"from sentence_transformers import SentenceTransformer; SentenceTransformer('{self.model_name}')\"\n"
-                    f"{'=' * 70}\n"
-                )
-                print(error_msg)
-                raise RuntimeError(error_msg) from local_err
-
-            # Step 2: Download allowed if EMBEDDING_LOCAL_ONLY=false
-            print(f"[Embeddings] '{self.model_name}' not available in local cache. Downloading from Hugging Face...")
-            try:
-                model = SentenceTransformer(self.model_name, device=self.device, local_files_only=False)
-                source = "downloaded from Hugging Face"
-            except Exception as dl_err:
-                error_msg = (
-                    f"\n{'=' * 70}\n"
-                    f"[Embeddings Error] Failed to download/load '{self.model_name}' from Hugging Face.\n"
-                    f"Underlying Error: {dl_err}\n"
-                    f"{'=' * 70}\n"
-                )
-                print(error_msg)
-                raise RuntimeError(error_msg) from dl_err
+            error_msg = (
+                f"\n{'=' * 70}\n"
+                f"[Embeddings Error] Failed to load model '{self.model_name}' from local cache.\n"
+                f"Underlying Error: {local_err}\n"
+                f"Explanation: BAAI/bge-m3 must run locally, but required weights or config files\n"
+                f"are not present in your local Hugging Face cache.\n"
+                f"Downloading during API requests is disabled to prevent request stalls.\n"
+                f"To fix this, pre-download the model offline using:\n"
+                f"  python backend/download_bge_m3.py\n"
+                f"{'=' * 70}\n"
+            )
+            print(error_msg)
+            raise RuntimeError(error_msg) from local_err
 
         # Step 3: Verify dimension at runtime
-        dim = model.get_sentence_embedding_dimension()
+        dim_fn = getattr(model, "get_embedding_dimension", getattr(model, "get_sentence_embedding_dimension", None))
+        dim = dim_fn() if dim_fn else 1024
         if dim != self.target_dim:
             raise ValueError(
                 f"[Embeddings Error] Model dimension mismatch for '{self.model_name}': "
@@ -107,7 +88,8 @@ class EmbeddingService:
         Guarantees exact schema and values expected by health checks.
         """
         model = self._get_model()
-        dim = model.get_sentence_embedding_dimension()
+        dim_fn = getattr(model, "get_embedding_dimension", getattr(model, "get_sentence_embedding_dimension", None))
+        dim = dim_fn() if dim_fn else 1024
         return {
             "model_name": self.model_name,
             "device": str(self.device),

@@ -38,6 +38,15 @@ def on_startup():
     except Exception as e:
         print(f"[Backend Warning] DB init deferred or encountered error: {e}")
 
+    print("[Backend] Loading BAAI/bge-m3 from local cache into memory...")
+    try:
+        from app.services.embeddings import embedding_service
+        embedding_service.get_model_info()
+        print("[Backend] BAAI/bge-m3 embeddings loaded and ready for queries.")
+    except Exception as e:
+        print(f"[Backend Warning] Embedding model pre-warm error: {e}")
+
+
 # Register API Routers
 app.include_router(memories_router)
 app.include_router(search_router)

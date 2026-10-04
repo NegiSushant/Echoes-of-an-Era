@@ -24,6 +24,58 @@ export const api = {
     return res.json();
   },
 
+  async processTranscript(memoryId, options = {}) {
+    let url = `${API_BASE}/memories/${memoryId}/process`;
+    const params = new URLSearchParams();
+    if (options.modelSize) params.append('model_size', options.modelSize);
+    if (options.language) params.append('language', options.language);
+    const qs = params.toString();
+    if (qs) url += `?${qs}`;
+
+    const res = await fetch(url, { method: 'POST' });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: 'Transcription failed' }));
+      throw new Error(err.detail || 'Transcription failed');
+    }
+    return res.json();
+  },
+
+  async extractMemory(memoryId) {
+    const res = await fetch(`${API_BASE}/memories/${memoryId}/extract`, {
+      method: 'POST',
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: 'Memory extraction failed' }));
+      throw new Error(err.detail || 'Memory extraction failed');
+    }
+    return res.json();
+  },
+
+  async processMemoryPipeline(memoryId) {
+    const res = await fetch(`${API_BASE}/memories/${memoryId}/pipeline`, {
+      method: 'POST',
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: 'Memory processing pipeline failed' }));
+      throw new Error(err.detail || 'Memory processing pipeline failed');
+    }
+    return res.json();
+  },
+
+  async getTranscript(memoryId) {
+    const res = await fetch(`${API_BASE}/memories/${memoryId}/transcript`);
+    if (!res.ok) throw new Error('Failed to fetch transcript');
+    return res.json();
+  },
+
+  async processAllPendingMemories() {
+    const res = await fetch(`${API_BASE}/memories/process_all_pending`, {
+      method: 'POST',
+    });
+    if (!res.ok) throw new Error('Failed to process pending memories');
+    return res.json();
+  },
+
   async getMemories(skip = 0, limit = 50, era = null, category = null) {
     let url = `${API_BASE}/memories?skip=${skip}&limit=${limit}`;
     if (era) url += `&era=${encodeURIComponent(era)}`;
