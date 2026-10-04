@@ -1,20 +1,19 @@
-import React, { useState, useRef } from 'react';
+import { useState, useRef } from 'react';
 import {
-  UploadCloud, CheckCircle2, AlertCircle, Loader2, Mic, Play,
-  FileAudio, ShieldCheck, Sparkles, Brain, ArrowRight, RotateCw, RefreshCw
+  UploadCloud, CheckCircle2, AlertCircle, Loader2, Mic, Play, ShieldCheck, Sparkles, ArrowRight
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { api } from '../../services/api';
 
 const ALLOWED_EXTS = ['.mp3', '.wav', '.m4a'];
-const MAX_SIZE_MB = 100;
+const MAX_SIZE_MB = 10;
 
 export default function AudioUploader({ onUploadSuccess, onPlayAudio }) {
   const [file, setFile] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [currentStep, setCurrentStep] = useState(null); // 'upload' | 'transcribe' | 'extract' | null
+  const [currentStep, setCurrentStep] = useState(null);
   const [stepStatus, setStepStatus] = useState({
-    upload: 'idle', // 'idle' | 'running' | 'success' | 'failed'
+    upload: 'idle',
     transcribe: 'idle',
     extract: 'idle'
   });

@@ -1,5 +1,4 @@
-import React from 'react';
-import { Calendar, MapPin, Users, Quote, Sparkles, Play, Clock, GitCompare } from 'lucide-react';
+import { Calendar, MapPin, Users, Quote, Sparkles, Play, GitCompare } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function MemoryCard({ memory, onPlayAudio }) {
@@ -107,18 +106,18 @@ export default function MemoryCard({ memory, onPlayAudio }) {
           </div>
         )}
 
-      {/* Life Advice Banner */}
-      {memory.life_advice && (
-        <div className="mb-4 p-3.5 rounded-xl bg-gradient-to-r from-amber-950/30 to-amber-900/20 border border-amber-600/30">
-          <div className="flex items-center space-x-1.5 text-xs font-semibold text-amber-400 mb-1">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Grandfather's Wisdom</span>
+        {/* Life Advice Banner */}
+        {memory.life_advice && (
+          <div className="mb-4 p-3.5 rounded-xl bg-gradient-to-r from-amber-950/30 to-amber-900/20 border border-amber-600/30">
+            <div className="flex items-center space-x-1.5 text-xs font-semibold text-amber-400 mb-1">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Grandfather's Wisdom</span>
+            </div>
+            <p className="text-xs text-amber-200/90 italic font-serif">
+              "{memory.life_advice}"
+            </p>
           </div>
-          <p className="text-xs text-amber-200/90 italic font-serif">
-            "{memory.life_advice}"
-          </p>
-        </div>
-      )}
+        )}
       </div>
 
       {/* Footer: Tags & People */}

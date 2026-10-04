@@ -1,13 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { Mic, BookOpen, MessageSquare, ArrowRightLeft, Radio, Heart } from 'lucide-react';
+import { Mic, BookOpen, MessageSquare, ArrowRightLeft, Radio } from 'lucide-react';
 import Home from './pages/Home';
 import Timeline from './pages/Timeline';
-import Memories from './pages/Memories';
 import Ask from './pages/Ask';
 import Compare from './pages/Compare';
 import AudioPlayer from './components/AudioPlayer';
-import { api } from './services/api';
 
 function Navigation() {
   const location = useLocation();
@@ -46,11 +44,10 @@ function Navigation() {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition ${
-                  isActive
-                    ? 'bg-amber-500/10 text-amber-300 border border-amber-500/30 font-semibold'
-                    : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800/50'
-                }`}
+                className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition ${isActive
+                  ? 'bg-amber-500/10 text-amber-300 border border-amber-500/30 font-semibold'
+                  : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800/50'
+                  }`}
               >
                 <Icon className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">{item.label}</span>

@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Mic, Sparkles, BookOpen, Clock, ShieldCheck, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import AudioUploader from '../components/AudioUploader';
-import MemoryCard from '../components/MemoryCard';
 import { api } from '../services/api';
 
 export default function Home({ onPlayAudio }) {
@@ -58,7 +57,7 @@ export default function Home({ onPlayAudio }) {
       {/* Hero Section */}
       <div className="relative text-center py-12 px-4 rounded-3xl overflow-hidden glass-panel border border-amber-900/30">
         <div className="absolute inset-0 bg-gradient-to-b from-amber-500/10 via-transparent to-transparent pointer-events-none" />
-        
+
         <div className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 text-xs font-medium mb-6">
           <Sparkles className="w-3.5 h-3.5" />
           <span>Hacktoberfest Weekend Challenge 2026: Build for a Friend</span>
@@ -159,11 +158,10 @@ export default function Home({ onPlayAudio }) {
                         <span>{((rec.file_size_bytes || 0) / (1024 * 1024)).toFixed(2)} MB</span>
                         <span>&bull;</span>
                         <span
-                          className={`px-1.5 py-0.2 rounded text-[10px] uppercase font-mono ${
-                            rec.status === 'completed'
-                              ? 'bg-emerald-500/10 text-emerald-400'
-                              : 'bg-amber-500/10 text-amber-400'
-                          }`}
+                          className={`px-1.5 py-0.2 rounded text-[10px] uppercase font-mono ${rec.status === 'completed'
+                            ? 'bg-emerald-500/10 text-emerald-400'
+                            : 'bg-amber-500/10 text-amber-400'
+                            }`}
                         >
                           {rec.status}
                         </span>

@@ -1,5 +1,4 @@
-import React from 'react';
-import { Clock, Calendar, Volume2 } from 'lucide-react';
+import { Clock, Calendar } from 'lucide-react';
 import MemoryCard from '../MemoryCard';
 
 export default function Timeline({ memories = [], onPlayAudio }) {

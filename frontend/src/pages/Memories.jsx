@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Search, LayoutGrid, GitCommit, SlidersHorizontal, Loader2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Search, LayoutGrid, GitCommit, Loader2 } from 'lucide-react';
 import MemoryCard from '../components/MemoryCard';
 import Timeline from '../components/Timeline';
 import { api } from '../services/api';
@@ -72,22 +72,20 @@ export default function Memories({ onPlayAudio }) {
           <div className="flex items-center bg-slate-900 border border-slate-800 p-1 rounded-xl">
             <button
               onClick={() => setViewMode('timeline')}
-              className={`p-2 rounded-lg text-xs flex items-center space-x-1.5 transition ${
-                viewMode === 'timeline'
+              className={`p-2 rounded-lg text-xs flex items-center space-x-1.5 transition ${viewMode === 'timeline'
                   ? 'bg-amber-600 text-white shadow-md'
                   : 'text-slate-400 hover:text-slate-200'
-              }`}
+                }`}
             >
               <GitCommit className="w-4 h-4" />
               <span className="hidden sm:inline">Timeline</span>
             </button>
             <button
               onClick={() => setViewMode('grid')}
-              className={`p-2 rounded-lg text-xs flex items-center space-x-1.5 transition ${
-                viewMode === 'grid'
+              className={`p-2 rounded-lg text-xs flex items-center space-x-1.5 transition ${viewMode === 'grid'
                   ? 'bg-amber-600 text-white shadow-md'
                   : 'text-slate-400 hover:text-slate-200'
-              }`}
+                }`}
             >
               <LayoutGrid className="w-4 h-4" />
               <span className="hidden sm:inline">Grid</span>

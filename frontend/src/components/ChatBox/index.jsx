@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Send, Sparkles, ShieldCheck, Quote, Play, AlertCircle, Loader2 } from 'lucide-react';
+import { useState } from 'react';
+import { Send, Sparkles, ShieldCheck, Play, Loader2 } from 'lucide-react';
 import { api } from '../../services/api';
 
 export default function ChatBox({ onPlayAudio }) {
@@ -76,11 +76,10 @@ export default function ChatBox({ onPlayAudio }) {
             className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}
           >
             <div
-              className={`max-w-[85%] rounded-2xl p-4 text-sm leading-relaxed ${
-                msg.sender === 'user'
-                  ? 'bg-amber-600 text-white rounded-br-none shadow-lg shadow-amber-900/20'
-                  : 'bg-slate-900/90 text-slate-200 border border-slate-800 rounded-bl-none shadow-md'
-              }`}
+              className={`max-w-[85%] rounded-2xl p-4 text-sm leading-relaxed ${msg.sender === 'user'
+                ? 'bg-amber-600 text-white rounded-br-none shadow-lg shadow-amber-900/20'
+                : 'bg-slate-900/90 text-slate-200 border border-slate-800 rounded-bl-none shadow-md'
+                }`}
             >
               <p className="whitespace-pre-wrap">{msg.text}</p>
 

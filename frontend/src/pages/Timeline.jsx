@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Clock, Calendar, Sparkles, Filter, Search, RotateCcw, AlertCircle, Loader2, BookOpen, Volume2 } from 'lucide-react';
 import MemoryCard from '../components/MemoryCard';
 import { api } from '../services/api';
@@ -141,11 +141,10 @@ export default function Timeline({ onPlayAudio }) {
             </span>
             <button
               onClick={() => setSelectedEra('All')}
-              className={`px-3 py-1.5 rounded-xl font-medium transition flex-shrink-0 cursor-pointer ${
-                selectedEra === 'All'
-                  ? 'bg-amber-500 text-slate-950 font-bold shadow-md shadow-amber-500/20'
-                  : 'bg-slate-900 text-slate-300 hover:text-white border border-slate-800'
-              }`}
+              className={`px-3 py-1.5 rounded-xl font-medium transition flex-shrink-0 cursor-pointer ${selectedEra === 'All'
+                ? 'bg-amber-500 text-slate-950 font-bold shadow-md shadow-amber-500/20'
+                : 'bg-slate-900 text-slate-300 hover:text-white border border-slate-800'
+                }`}
             >
               All Eras ({timelineData.total_memories})
             </button>
@@ -153,11 +152,10 @@ export default function Timeline({ onPlayAudio }) {
               <button
                 key={eraGroup.era}
                 onClick={() => setSelectedEra(eraGroup.era)}
-                className={`px-3 py-1.5 rounded-xl font-medium transition flex-shrink-0 cursor-pointer ${
-                  selectedEra === eraGroup.era
-                    ? 'bg-amber-500 text-slate-950 font-bold shadow-md shadow-amber-500/20'
-                    : 'bg-slate-900 text-slate-300 hover:text-white border border-slate-800'
-                }`}
+                className={`px-3 py-1.5 rounded-xl font-medium transition flex-shrink-0 cursor-pointer ${selectedEra === eraGroup.era
+                  ? 'bg-amber-500 text-slate-950 font-bold shadow-md shadow-amber-500/20'
+                  : 'bg-slate-900 text-slate-300 hover:text-white border border-slate-800'
+                  }`}
               >
                 {eraGroup.era} ({eraGroup.count})
               </button>
@@ -175,11 +173,10 @@ export default function Timeline({ onPlayAudio }) {
                 <button
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
-                  className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition flex-shrink-0 cursor-pointer ${
-                    selectedCategory === cat
-                      ? 'bg-sky-500/20 text-sky-300 border border-sky-400/40 font-bold'
-                      : 'bg-slate-900/60 text-slate-400 hover:text-slate-200 border border-slate-800/80'
-                  }`}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition flex-shrink-0 cursor-pointer ${selectedCategory === cat
+                    ? 'bg-sky-500/20 text-sky-300 border border-sky-400/40 font-bold'
+                    : 'bg-slate-900/60 text-slate-400 hover:text-slate-200 border border-slate-800/80'
+                    }`}
                 >
                   {cat}
                 </button>

@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { ArrowRightLeft, Sparkles, Loader2, Search, Send } from 'lucide-react';
+import { Sparkles, Loader2, Search, Send } from 'lucide-react';
 import ThenNow from '../components/ThenNow';
 import { api } from '../services/api';
 
@@ -82,11 +82,10 @@ export default function Compare({ onPlayAudio }) {
                 <button
                   key={mem.id}
                   onClick={() => handleSelectMemory(mem.id)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-medium transition cursor-pointer ${
-                    selectedMemoryId === mem.id && !activeQuery
+                  className={`px-3 py-1.5 rounded-xl text-xs font-medium transition cursor-pointer ${selectedMemoryId === mem.id && !activeQuery
                       ? 'bg-amber-500 text-slate-950 font-bold shadow-lg shadow-amber-500/20'
                       : 'bg-slate-900 text-slate-300 hover:text-white border border-slate-800'
-                  }`}
+                    }`}
                 >
                   {mem.title}
                 </button>

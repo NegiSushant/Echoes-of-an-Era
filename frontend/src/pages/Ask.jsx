@@ -1,5 +1,4 @@
-import React from 'react';
-import { MessageSquare, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import ChatBox from '../components/ChatBox';
 
 export default function Ask({ onPlayAudio }) {

@@ -1,5 +1,5 @@
-import React, { useRef, useState, useEffect } from 'react';
-import { Play, Pause, Volume2, RotateCcw, FastForward } from 'lucide-react';
+import { useRef, useState, useEffect } from 'react';
+import { Play, Pause } from 'lucide-react';
 import { api } from '../../services/api';
 
 export default function AudioPlayer({ audioId, initialTime = 0, autoPlay = false, title = "Grandfather's Voice" }) {
