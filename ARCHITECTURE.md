@@ -10,33 +10,7 @@ The platform enforces a strict separation between **authentic historical artifac
 
 ## 2. System Architecture Diagram
 
-
-<script src="https://mermaid.live/embed.js" async></script>
-<mermaid-embed src="https://mermaid.live/embed?theme=redux-dark-color&look=classic&mode=dark" height="480">
-sequenceDiagram
-    autonumber
-    actor User
-    participant API as FastAPI /api/ask
-    participant Embed as BGE-M3 Embedder
-    participant DB as PostgreSQL pgvector
-    participant LLM as Gemma 3 (Docker Model Runner)
-
-    User->>API: POST /api/ask {"question": "..."}
-    API->>Embed: embed_text(question)
-    Embed-->>API: 1024-dim query vector
-
-    API->>DB: Hybrid Search (HNSW Vector + Keyword Match + RRF Fusion)
-    DB-->>API: Ranked candidate memories + similarity scores
-
-    alt Top similarity score &lt; 0.20 (Insufficient Evidence)
-        API-->>User: Refusal: "Grandfather has not spoken about this in his recorded memories."
-    else Top similarity score >= 0.20
-        API->>LLM: POST /api/generate (Context + Grounding Rules + Question)
-        LLM-->>API: Grounded Answer Text
-        API->>API: Validate answer for refusal keywords
-        API-->>User: Return Answer + Source Audio Badges + Timestamps
-    end
-</mermaid-embed>
+<img width="3484" height="1662" alt="image" src="https://github.com/user-attachments/assets/d83392f9-c35a-4f41-a9e3-2950c56dbbad" />
 
 ---
 
