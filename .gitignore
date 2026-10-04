@@ -18,7 +18,16 @@ data/
 data/postgres/
 data/ollama/
 uploads/
+backend/uploads/
 recordings/
+
+# Audio Recordings & Media Files (protect personal audio)
+*.mp3
+*.wav
+*.m4a
+*.flac
+*.ogg
+*.aac
 
 # Node & Frontend
 node_modules/
@@ -33,3 +42,4 @@ yarn-error.log*
 Thumbs.db
 .vscode/
 .idea/
+
