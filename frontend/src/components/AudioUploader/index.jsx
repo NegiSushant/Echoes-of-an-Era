@@ -1,0 +1,224 @@
+import React, { useState, useRef } from 'react';
+import { UploadCloud, CheckCircle2, AlertCircle, Loader2, Mic, Play, Pause, FileAudio, ShieldCheck } from 'lucide-react';
+import { api } from '../../services/api';
+
+const ALLOWED_TYPES = ['audio/mpeg', 'audio/wav', 'audio/x-wav', 'audio/mp4', 'audio/x-m4a', 'audio/m4a'];
+const ALLOWED_EXTS = ['.mp3', '.wav', '.m4a'];
+const MAX_SIZE_MB = 100;
+
+export default function AudioUploader({ onUploadSuccess, onPlayAudio }) {
+  const [file, setFile] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadResult, setUploadResult] = useState(null);
+  const [error, setError] = useState(null);
+  const fileInputRef = useRef(null);
+
+  const validateFile = (selectedFile) => {
+    if (!selectedFile) return false;
+
+    const ext = '.' + selectedFile.name.split('.').pop().toLowerCase();
+    if (!ALLOWED_EXTS.includes(ext)) {
+      setError(`Invalid file format '${ext}'. Allowed: .mp3, .wav, .m4a`);
+      return false;
+    }
+
+    const sizeMb = selectedFile.size / (1024 * 1024);
+    if (sizeMb > MAX_SIZE_MB) {
+      setError(`File is too large (${sizeMb.toFixed(1)}MB). Maximum allowed is ${MAX_SIZE_MB}MB.`);
+      return false;
+    }
+
+    setError(null);
+    return true;
+  };
+
+  const handleFileChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      const selected = e.target.files[0];
+      if (validateFile(selected)) {
+        setFile(selected);
+        setUploadResult(null);
+      }
+    }
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      const dropped = e.dataTransfer.files[0];
+      if (validateFile(dropped)) {
+        setFile(dropped);
+        setUploadResult(null);
+      }
+    }
+  };
+
+  const handleUpload = async () => {
+    if (!file) return;
+    setIsUploading(true);
+    setError(null);
+
+    try {
+      const result = await api.uploadAudio(file);
+      setUploadResult(result);
+      setFile(null);
+      if (onUploadSuccess) onUploadSuccess(result);
+    } catch (err) {
+      setError(err.message || 'Error uploading grandfather voice recording');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const formatDuration = (secs) => {
+    if (!secs || isNaN(secs)) return '0:00';
+    const m = Math.floor(secs / 60);
+    const s = Math.floor(secs % 60);
+    return `${m}:${s < 10 ? '0' : ''}${s}`;
+  };
+
+  return (
+    <div className="glass-panel p-6 rounded-2xl border border-amber-900/30 shadow-xl space-y-5">
+      {/* Header */}
+      <div className="flex items-center space-x-3">
+        <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
+          <Mic className="w-5 h-5" />
+        </div>
+        <div>
+          <h3 className="text-lg font-semibold text-white font-serif">Add a Memory</h3>
+          <p className="text-xs text-slate-400">Deposit grandfather's original voice recording safely</p>
+        </div>
+      </div>
+
+      {/* Drag & Drop Zone */}
+      <div
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={handleDrop}
+        onClick={() => fileInputRef.current?.click()}
+        className="border-2 border-dashed border-slate-700 hover:border-amber-500/50 transition-colors rounded-xl p-8 text-center cursor-pointer bg-slate-900/40 hover:bg-slate-900/70"
+      >
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".mp3,.wav,.m4a"
+          className="hidden"
+          onChange={handleFileChange}
+        />
+        <UploadCloud className="w-10 h-10 mx-auto text-amber-400/80 mb-3" />
+        {file ? (
+          <div>
+            <p className="text-sm font-semibold text-amber-200">{file.name}</p>
+            <p className="text-xs text-slate-400 mt-1">{(file.size / (1024 * 1024)).toFixed(2)} MB</p>
+            <span className="inline-block mt-2 text-[11px] px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
+              Ready for deposit
+            </span>
+          </div>
+        ) : (
+          <div>
+            <p className="text-sm text-slate-300 font-medium">Click or drag & drop grandfather's voice recording</p>
+            <p className="text-xs text-slate-500 mt-1">Supported: .mp3, .wav, .m4a (Max 100MB)</p>
+          </div>
+        )}
+      </div>
+
+      {/* Upload Action */}
+      {file && (
+        <div className="flex items-center justify-between pt-2">
+          <button
+            onClick={() => setFile(null)}
+            className="text-xs text-slate-500 hover:text-slate-300 transition"
+          >
+            Clear selection
+          </button>
+          <button
+            onClick={handleUpload}
+            disabled={isUploading}
+            className="flex items-center space-x-2 px-6 py-2.5 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white text-sm font-semibold rounded-xl transition shadow-lg shadow-amber-900/40 disabled:opacity-50"
+          >
+            {isUploading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Safely Preserving Audio...</span>
+              </>
+            ) : (
+              <span>Save Original Audio</span>
+            )}
+          </button>
+        </div>
+      )}
+
+      {/* Error Message */}
+      {error && (
+        <div className="p-3.5 bg-red-500/10 border border-red-500/20 rounded-xl flex items-start space-x-2.5 text-xs text-red-400">
+          <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+          <span>{error}</span>
+        </div>
+      )}
+
+      {/* Uploaded Record Confirmation */}
+      {uploadResult && (
+        <div className="p-4 bg-emerald-950/30 border border-emerald-500/30 rounded-xl space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2 text-xs font-semibold text-emerald-400">
+              <CheckCircle2 className="w-4 h-4" />
+              <span>Original Audio Preserved Permanently</span>
+            </div>
+            <span className="text-[10px] font-mono uppercase bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded border border-emerald-500/30">
+              Status: {uploadResult.status}
+            </span>
+          </div>
+
+          <div className="text-xs space-y-1 text-slate-300 border-t border-emerald-900/40 pt-2 font-mono">
+            <div className="flex justify-between">
+              <span className="text-slate-500">Memory ID:</span>
+              <span className="text-amber-300 truncate max-w-[200px]" title={uploadResult.memory_id}>
+                {uploadResult.memory_id}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">File Name:</span>
+              <span className="text-slate-200">{uploadResult.file_name}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">Duration:</span>
+              <span className="text-slate-200">{formatDuration(uploadResult.duration)} ({uploadResult.duration}s)</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">File Size:</span>
+              <span className="text-slate-200">{(uploadResult.file_size_bytes / (1024 * 1024)).toFixed(2)} MB</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">Storage Path:</span>
+              <span className="text-slate-400 truncate max-w-[200px]" title={uploadResult.audio_path}>
+                {uploadResult.audio_path}
+              </span>
+            </div>
+          </div>
+
+          {/* Test Listen Button */}
+          {onPlayAudio && (
+            <button
+              onClick={() =>
+                onPlayAudio({
+                  audioId: uploadResult.memory_id,
+                  startTime: 0,
+                  title: uploadResult.file_name
+                })
+              }
+              className="w-full mt-2 flex items-center justify-center space-x-2 py-2 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 text-xs font-semibold transition"
+            >
+              <Play className="w-3.5 h-3.5 fill-emerald-300" />
+              <span>Verify & Listen to Original Recording</span>
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Core Principle Assurance */}
+      <div className="pt-2 border-t border-slate-800/80 flex items-center space-x-2 text-[11px] text-slate-500">
+        <ShieldCheck className="w-4 h-4 text-amber-500/80 flex-shrink-0" />
+        <span>Source of truth: Grandfather's original file is never deleted or altered.</span>
+      </div>
+    </div>
+  );
+}

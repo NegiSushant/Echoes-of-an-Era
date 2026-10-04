@@ -1,0 +1,24 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: echoes_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-echoes}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-echoes_password}
+      POSTGRES_DB: ${POSTGRES_DB:-echoes_of_an_era}
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U echoes -d echoes_of_an_era"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # LLM Service note:
+  # Using Docker Model Runner directly via `docker model` CLI:
+  # Model: gemma3:1B-Q4_K_M
+  # Endpoint: http://localhost:12434
+  # No extra container needed in docker-compose.
