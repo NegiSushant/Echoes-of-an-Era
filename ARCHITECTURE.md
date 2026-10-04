@@ -10,7 +10,33 @@ The platform enforces a strict separation between **authentic historical artifac
 
 ## 2. System Architecture Diagram
 
-<iframe src="https://mermaid.live/embed?theme=redux-dark-color&look=classic&mode=dark#pako:eNp9VO9P2zAQ_VdO_lREWxjsU7RVoisUNDqg7Zg0RZqO-JpaSezMP4AK8b_vnCyFQTV_SWK_u3v33jlPIjOSRCIc_Q6kM5oozC1WqU018MLgjQ7VHdntTuaNhe_uZadG61WmatQeTq4vAB2cofPx9QBrdYCu2AU95awygsfT08HsuP2Wu9NOxhF4bZzPLS1uLqHO7ykS2QW-vJxF9JSqCuEYehOTFWRhxo2WMA9ak92LcV1s7GUwGjHfBK6vFssta3hKBavivDI6FQmkYjgcpuK5C-QIjmt4J0Dx8cvTo-91MXsdsIEMuhofDo8-DqSqgHF2Ay-N_Jt3Mk7gfHNnlYQFoc3W0Dv_tvgBtw0e9uErbR6MlTBDz4f7MJ-fwVlwrwtPxtuqc9QF652hlkqiJ6ioMlaR40inKlWiVX4DLjOW3Gs2WHpYmvodCD7B4fDoEHoX2oXVitWn6Oq9knGOthS6hphHFJqJ0Co4LKOcU8tsVujXbM-aLdPGg6tNQRrwzgQPfq0cKA3xYYmrSm6hI85WdEWodLSb5Ohzw_Itm9GIp-S13TnxWERZel-Mji6yLFNrAqulc56ashHq5q2zcXGmrcptCJM80e6Bu1pypve1G-gtlq0R2EJXbKpttYGitdb9R0QfrO6q7MPCBJsRnASpDIxR5g3dpaqYL1b1NhFpKfoi56ESibeB-qIiW2H8FDzt7ERFPOqpsCTD40CiLQaZKXk-RT8VpTFFc5qV6JzK-C5wNr50P42puoSsQL4WyQrZk74Idezx71-lhTz_AUYBdjE" width="100%" height="480" style="border:0" loading="lazy" title="Mermaid diagram" sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"></iframe>
+
+<script src="https://mermaid.live/embed.js" async></script>
+<mermaid-embed src="https://mermaid.live/embed?theme=redux-dark-color&look=classic&mode=dark" height="480">
+sequenceDiagram
+    autonumber
+    actor User
+    participant API as FastAPI /api/ask
+    participant Embed as BGE-M3 Embedder
+    participant DB as PostgreSQL pgvector
+    participant LLM as Gemma 3 (Docker Model Runner)
+
+    User->>API: POST /api/ask {"question": "..."}
+    API->>Embed: embed_text(question)
+    Embed-->>API: 1024-dim query vector
+
+    API->>DB: Hybrid Search (HNSW Vector + Keyword Match + RRF Fusion)
+    DB-->>API: Ranked candidate memories + similarity scores
+
+    alt Top similarity score &lt; 0.20 (Insufficient Evidence)
+        API-->>User: Refusal: "Grandfather has not spoken about this in his recorded memories."
+    else Top similarity score >= 0.20
+        API->>LLM: POST /api/generate (Context + Grounding Rules + Question)
+        LLM-->>API: Grounded Answer Text
+        API->>API: Validate answer for refusal keywords
+        API-->>User: Return Answer + Source Audio Badges + Timestamps
+    end
+</mermaid-embed>
 
 ---
 
